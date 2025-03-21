@@ -32,12 +32,15 @@ func (job *TaxIncludedPriceJob) LoadData() error {
 }
 
 // func () - converts functions to a method
-func (job *TaxIncludedPriceJob) Process() error {
+func (job *TaxIncludedPriceJob) Process(doneChan chan bool, errorChan chan error) {
 
 	err := job.LoadData()
 
 	if err != nil {
-		return err
+		errorChan <- err
+		//whilst the value returned is ignored when called as a goroutine
+		//but the return, in general still works
+		return
 	}
 
 	result := make(map[string]string)
@@ -48,7 +51,8 @@ func (job *TaxIncludedPriceJob) Process() error {
 	}
 
 	job.TaxIncludedPrices = result
-	return job.IOManager.WriteResult(job)
+	job.IOManager.WriteResult(job)
+	doneChan <- true
 }
 
 // Output *TaxIncludedPriceJob,

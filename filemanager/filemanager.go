@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
+	"time"
 )
 
 type FileManager struct {
@@ -17,14 +17,18 @@ func (fm FileManager) ReadLines() ([]string, error) {
 	file, err := os.Open(fm.InputFilePath)
 
 	if err != nil {
-		fmt.Println("Could not open file!")
-		fmt.Println(err)
-		return nil, errors.New("Failed to open file!")
+		return nil, errors.New("failed to open file")
 	}
+
+	// defer is a important keyword
+	// whenever you have some operation, some function
+	//that must be called whener the outer function is done.
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
 	var lines []string
+
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
@@ -32,12 +36,11 @@ func (fm FileManager) ReadLines() ([]string, error) {
 	err = scanner.Err()
 
 	if err != nil {
-		file.Close()
-
-		return nil, errors.New("Failed to read the file!")
+		//file.Close()
+		return nil, errors.New("failed to read the file")
 	}
 
-	file.Close()
+	//file.Close()
 	return lines, nil
 }
 
@@ -45,15 +48,17 @@ func (fm FileManager) WriteResult(data interface{}) error {
 	file, err := os.Create(fm.OutputFilePath)
 
 	if err != nil {
-		return errors.New("Failed to create file!")
+		return errors.New("failed to create file")
 	}
+
+	time.Sleep(3 * time.Second)
 
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(data)
 
 	if err != nil {
 		file.Close()
-		return errors.New("Failed to encode data!")
+		return errors.New("failed to encode data")
 	}
 
 	file.Close()
